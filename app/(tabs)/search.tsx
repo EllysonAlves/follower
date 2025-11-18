@@ -17,58 +17,55 @@ import { userService } from '../../services/api';
 export default function Search() {
   const [searchQuery, setSearchQuery] = useState('');
   const [users, setUsers] = useState<User[]>([]);
-  const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
+  const [hasSearched, setHasSearched] = useState(false);
   const router = useRouter();
 
-  useEffect(() => {
-    loadAllUsers();
-  }, []);
+  // Remove o carregamento inicial de todos os usuários
+  // useEffect(() => {
+  //   loadAllUsers();
+  // }, []);
 
   useEffect(() => {
     if (searchQuery.trim() === '') {
-      setFilteredUsers(users);
+      setUsers([]);
+      setHasSearched(false);
       setIsSearching(false);
     } else {
-      handleSearch();
+   
+      const timeoutId = setTimeout(() => {
+        handleSearch();
+      }, 500); 
+
+      return () => clearTimeout(timeoutId);
     }
   }, [searchQuery]);
 
-  const loadAllUsers = async () => {
-    try {
-      setLoading(true);
-      const usersData = await userService.getAll();
-      setUsers(usersData);
-      setFilteredUsers(usersData);
-    } catch (error) {
-      console.error('Erro ao carregar usuários:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const handleSearch = async () => {
     if (searchQuery.trim() === '') {
-      setFilteredUsers(users);
+      setUsers([]);
+      setHasSearched(false);
       return;
     }
 
     setIsSearching(true);
+    setHasSearched(true);
     try {
       const searchResults = await userService.search(searchQuery);
-      setFilteredUsers(searchResults);
+      setUsers(searchResults);
     } catch (error) {
       console.error('Erro na busca:', error);
-      // Fallback para busca local se a API falhar
-      const localResults = users.filter(user =>
-        user.username.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        user.name.toLowerCase().includes(searchQuery.toLowerCase())
-      );
-      setFilteredUsers(localResults);
+      setUsers([]);
     } finally {
       setIsSearching(false);
     }
+  };
+
+  const clearSearch = () => {
+    setSearchQuery('');
+    setUsers([]);
+    setHasSearched(false);
   };
 
   const navigateToUser = (userId: string) => {
@@ -106,19 +103,37 @@ export default function Search() {
     </TouchableOpacity>
   );
 
-  const renderEmptyState = () => (
-    <View style={styles.emptyState}>
-      <Ionicons name="search-outline" size={64} color="#ccc" />
-      <Text style={styles.emptyStateTitle}>
-        {searchQuery ? 'Nenhum usuário encontrado' : 'Buscar usuários'}
-      </Text>
-      <Text style={styles.emptyStateText}>
-        {searchQuery
-          ? 'Tente buscar por outro nome ou username'
-          : 'Digite um nome ou username para buscar'}
-      </Text>
-    </View>
-  );
+  const renderEmptyState = () => {
+    if (isSearching) {
+      return null; 
+    }
+
+    if (hasSearched && users.length === 0) {
+      return (
+        <View style={styles.emptyState}>
+          <Ionicons name="search-outline" size={64} color="#ccc" />
+          <Text style={styles.emptyStateTitle}>Nenhum usuário encontrado</Text>
+          <Text style={styles.emptyStateText}>
+            Tente buscar por outro nome ou username
+          </Text>
+        </View>
+      );
+    }
+
+    if (!hasSearched) {
+      return (
+        <View style={styles.emptyState}>
+          <Ionicons name="search-outline" size={64} color="#ccc" />
+          <Text style={styles.emptyStateTitle}>Buscar usuários</Text>
+          <Text style={styles.emptyStateText}>
+            Digite um nome ou username para buscar
+          </Text>
+        </View>
+      );
+    }
+
+    return null;
+  };
 
   return (
     <View style={styles.container}>
@@ -132,32 +147,32 @@ export default function Search() {
           onChangeText={setSearchQuery}
           autoCapitalize="none"
           autoCorrect={false}
+          returnKeyType="search"
+          onSubmitEditing={handleSearch}
         />
         {searchQuery.length > 0 && (
-          <TouchableOpacity onPress={() => setSearchQuery('')}>
+          <TouchableOpacity onPress={clearSearch}>
             <Ionicons name="close-circle" size={20} color="#999" />
           </TouchableOpacity>
         )}
       </View>
 
       {/* Indicador de carregamento */}
-      {(loading || isSearching) && (
+      {isSearching && (
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="small" color="#007AFF" />
-          <Text style={styles.loadingText}>
-            {isSearching ? 'Buscando...' : 'Carregando...'}
-          </Text>
+          <Text style={styles.loadingText}>Buscando...</Text>
         </View>
       )}
 
       {/* Lista de resultados */}
       <FlatList
-        data={filteredUsers}
+        data={users}
         keyExtractor={(item) => item.id}
         renderItem={renderUserItem}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.listContent}
-        ListEmptyComponent={!loading && !isSearching ? renderEmptyState : null}
+        ListEmptyComponent={renderEmptyState}
       />
     </View>
   );

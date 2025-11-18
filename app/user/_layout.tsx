@@ -6,7 +6,7 @@ export default function UserLayout() {
       <Stack.Screen 
         name="[id]" 
         options={{ 
-          headerShown: false // Remove o header para todas as páginas user/[id]
+          headerShown: false 
         }} 
       />
     </Stack>

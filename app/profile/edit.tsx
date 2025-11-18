@@ -76,10 +76,9 @@ export default function EditProfile() {
       }
 
       await userService.update(user.id, updateData);
-      
-      // Atualizar contexto com novos dados
+
       const updatedUser = { ...user, ...formData, avatar };
-      // Você precisaria atualizar o contexto de autenticação aqui
+
       
       Alert.alert('Sucesso', 'Perfil atualizado com sucesso!');
       router.back();

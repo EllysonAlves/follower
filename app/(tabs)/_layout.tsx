@@ -9,7 +9,6 @@ export default function TabLayout() {
   const { user, isLoading } = useAuth();
   const router = useRouter();
 
-  // Se não estiver autenticado, redireciona para login
   if (!isLoading && !user) {
     return <Redirect href="/(auth)/login" />;
   }
@@ -19,7 +18,7 @@ export default function TabLayout() {
       <TouchableOpacity onPress={() => router.push('/post/create')}>
         <Ionicons name="add-circle-outline" size={24} color="black" />
       </TouchableOpacity>
-      <TouchableOpacity onPress={() => router.push('/followers')}>
+      <TouchableOpacity onPress={() => router.push('/activities')}>
         <Ionicons name="heart-outline" size={24} color="black" />
       </TouchableOpacity>
     </View>

@@ -60,7 +60,6 @@ export default function Register() {
       });
     }
 
-    // Mostrar aviso para senha fraca (mas não bloquear o registro)
     if (field === 'password' && validation.message && validation.isValid) {
       toastService.warning(validation.message, 'Senha fraca');
     }
@@ -68,8 +67,7 @@ export default function Register() {
 
   const handleFieldChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
-    
-    // Validar em tempo real após o usuário terminar de digitar
+
     setTimeout(() => {
       validateField(field, value);
     }, 500);
@@ -78,7 +76,6 @@ export default function Register() {
   const validateForm = (): boolean => {
     const newErrors: {[key: string]: string} = {};
 
-    // Validar todos os campos
     const nameValidation = validators.name(formData.name);
     const usernameValidation = validators.username(formData.username);
     const emailValidation = validators.email(formData.email);
@@ -131,7 +128,7 @@ export default function Register() {
       let errorMessage = 'Erro ao criar conta';
       
       if (error.response) {
-        // Tratamento específico para erros comuns da API
+
         if (error.response.status === 400) {
           errorMessage = error.response.data?.message || 'Dados inválidos';
         } else if (error.response.status === 409) {
@@ -165,8 +162,7 @@ export default function Register() {
       showsVerticalScrollIndicator={false}
     >
       <Text style={styles.title}>Criar Conta</Text>
-      
-      {/* Nome Completo */}
+
       <View style={styles.inputContainer}>
         <TextInput
           style={getInputStyle('name')}
@@ -179,7 +175,6 @@ export default function Register() {
         {errors.name && <Text style={styles.errorText}>{errors.name}</Text>}
       </View>
 
-      {/* Nome de Usuário */}
       <View style={styles.inputContainer}>
         <TextInput
           style={getInputStyle('username')}
@@ -193,7 +188,6 @@ export default function Register() {
         {errors.username && <Text style={styles.errorText}>{errors.username}</Text>}
       </View>
 
-      {/* Email */}
       <View style={styles.inputContainer}>
         <TextInput
           style={getInputStyle('email')}
@@ -208,7 +202,6 @@ export default function Register() {
         {errors.email && <Text style={styles.errorText}>{errors.email}</Text>}
       </View>
 
-      {/* Senha */}
       <View style={styles.inputContainer}>
         <View style={styles.passwordContainer}>
           <TextInput
@@ -232,8 +225,7 @@ export default function Register() {
           </TouchableOpacity>
         </View>
         {errors.password && <Text style={styles.errorText}>{errors.password}</Text>}
-        
-        {/* Dicas de senha */}
+
         {formData.password.length > 0 && (
           <View style={styles.passwordTips}>
             <Text style={styles.tipsTitle}>Sua senha deve conter:</Text>
@@ -271,7 +263,6 @@ export default function Register() {
         )}
       </View>
 
-      {/* Bio */}
       <View style={styles.inputContainer}>
         <TextInput
           style={[getInputStyle('bio'), styles.textArea]}
@@ -289,8 +280,7 @@ export default function Register() {
           {formData.bio.length}/150 caracteres
         </Text>
       </View>
-      
-      {/* Botão de Registro */}
+
       <TouchableOpacity 
         style={[
           styles.button, 
@@ -306,7 +296,6 @@ export default function Register() {
         )}
       </TouchableOpacity>
 
-      {/* Link para Login */}
       <TouchableOpacity 
         onPress={() => router.back()} 
         disabled={isLoading}

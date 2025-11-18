@@ -9,20 +9,17 @@ export default function Feed() {
   const { posts, refreshPosts, loading } = usePosts();
   const [refreshing, setRefreshing] = useState(false);
 
-  // Carregar posts inicialmente
   useEffect(() => {
     console.log('🔰 Feed montado - carregando posts iniciais');
     refreshPosts();
-  }, []); // SEM dependências - executa apenas uma vez
+  }, []); 
 
-  // Configurar event listeners (após o componente montar)
   useEffect(() => {
     console.log('🎯 Configurando event listeners');
 
     const handlePostUpdated = ({ postId }: { postId: string }) => {
       console.log('🔄 Evento recebido: POST_UPDATED para', postId);
 
-      // Delay para garantir que a API tenha processado
       setTimeout(() => {
         console.log('⏰ Refresh após evento');
         refreshPosts();
@@ -46,7 +43,7 @@ export default function Feed() {
       eventService.off(EVENTS.POST_UPDATED, handlePostUpdated);
       eventService.off(EVENTS.COMMENT_ADDED, handleCommentAdded);
     };
-  }, [refreshPosts]); // Apenas refreshPosts como dependência
+  }, [refreshPosts]); 
 
   const onRefresh = async () => {
     setRefreshing(true);
@@ -60,7 +57,6 @@ export default function Feed() {
         data={posts}
         keyExtractor={(item) => item.id.toString()}
         renderItem={({ item }) => {
-          // Verificar se o item tem a estrutura correta
           if (!item.comments_count && item.comments_count !== 0) {
             console.warn('❌ Post com comments_count inválido:', item.id, item);
           }
@@ -73,7 +69,7 @@ export default function Feed() {
           />
         }
         contentContainerStyle={styles.listContent}
-        extraData={posts} // Isso força o re-render quando posts mudam
+        extraData={posts} 
       />
     </View>
   );

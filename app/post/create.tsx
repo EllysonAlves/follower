@@ -85,7 +85,6 @@ export default function CreatePost() {
       formData.append('user_id', user.id);
       formData.append('caption', caption);
 
-      // Adicionar a imagem
       const imageFile = {
         uri: image,
         type: 'image/jpeg',

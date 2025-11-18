@@ -23,19 +23,25 @@ export default function PostCard({ post, onPostDeleted }: PostCardProps) {
     const router = useRouter();
     const { updatePostLikes, updatePostComments } = usePosts();
 
-    // CÁLCULO ROBUSTO DO comments_count
+   
+    useEffect(() => {
+        console.log(`👤 PostCard ${post.id} - Dados do usuário:`, {
+            username: post.username,
+            avatar: post.avatar,
+            user_id: post.user_id,
+            temUserObject: !!post.user
+        });
+    }, [post]);
+
     const calculateCommentsCount = () => {
-        // Prioridade 1: comments_count direto da API
         if (post.comments_count !== undefined && post.comments_count !== null) {
             return post.comments_count;
         }
         
-        // Prioridade 2: contar os comentários do array
         if (post.comments && post.comments.length > 0) {
             return post.comments.length;
         }
         
-        // Prioridade 3: valor padrão
         return 0;
     };
 
@@ -46,24 +52,10 @@ export default function PostCard({ post, onPostDeleted }: PostCardProps) {
     const calculateIsLiked = () => {
         return post.liked_by_auth_user || false;
     };
-
-    // Valores calculados - SEMPRE consistentes
+    
     const commentsCount = calculateCommentsCount();
     const likesCount = calculateLikesCount();
     const isLiked = calculateIsLiked();
-
-    // DEBUG: Verificar a consistência dos dados
-    useEffect(() => {
-        console.log(`🔄 PostCard ${post.id} - Dados calculados:`, {
-            comments_count_original: post.comments_count,
-            comments_count_calculado: commentsCount,
-            comments_array_length: post.comments?.length,
-            likes_count: likesCount,
-            is_liked: isLiked,
-            tem_comments_count: 'comments_count' in post,
-            estrutura: Object.keys(post)
-        });
-    }, [post, commentsCount, likesCount, isLiked]);
 
     const handleLike = async () => {
         if (isLiking) return;
@@ -75,14 +67,14 @@ export default function PostCard({ post, onPostDeleted }: PostCardProps) {
                 likes_count: likesCount
             });
 
-            // Atualização otimista NO CONTEXTO
+          
             updatePostLikes(
                 post.id, 
                 likesCount + (isLiked ? -1 : 1), 
                 !isLiked
             );
 
-            // Fazer a requisição para a API
+            
             if (isLiked) {
                 console.log('🔄 Fazendo unlike...');
                 await postService.unlike(post.id);
@@ -96,7 +88,7 @@ export default function PostCard({ post, onPostDeleted }: PostCardProps) {
         } catch (error: any) {
             console.error('❌ Erro ao curtir post:', error);
             
-            // Reverter a atualização otimista em caso de erro
+            
             const originalPost = await postService.getOne(post.id);
             updatePostLikes(
                 post.id, 
@@ -151,6 +143,25 @@ export default function PostCard({ post, onPostDeleted }: PostCardProps) {
         }
     };
 
+   
+    const getDisplayUsername = () => {
+        return post.username || 'usuário';
+    };
+
+   
+    const renderAvatar = () => {
+        if (post.avatar) {
+            return <Image source={{ uri: post.avatar }} style={styles.avatar} />;
+        }
+        
+        const initial = getDisplayUsername().charAt(0).toUpperCase();
+        return (
+            <View style={[styles.avatar, styles.avatarPlaceholder]}>
+                <Text style={styles.avatarText}>{initial}</Text>
+            </View>
+        );
+    };
+
     return (
         <>
             <View style={styles.container}>
@@ -159,16 +170,8 @@ export default function PostCard({ post, onPostDeleted }: PostCardProps) {
                         style={styles.userInfo}
                         onPress={navigateToUser}
                     >
-                        {post.user?.avatar ? (
-                            <Image source={{ uri: post.user.avatar }} style={styles.avatar} />
-                        ) : (
-                            <View style={[styles.avatar, styles.avatarPlaceholder]}>
-                                <Text style={styles.avatarText}>
-                                    {post.user?.username?.charAt(0).toUpperCase() || 'U'}
-                                </Text>
-                            </View>
-                        )}
-                        <Text style={styles.username}>{post.user?.username}</Text>
+                        {renderAvatar()}
+                        <Text style={styles.username}>{getDisplayUsername()}</Text>
                     </TouchableOpacity>
 
                     {user?.id === post.user_id && (
@@ -203,7 +206,7 @@ export default function PostCard({ post, onPostDeleted }: PostCardProps) {
                         {likesCount} curtida{likesCount !== 1 ? 's' : ''}
                     </Text>
                     <Text style={styles.caption}>
-                        <Text style={styles.username}>{post.user?.username}</Text> {post.caption}
+                        <Text style={styles.username}>{getDisplayUsername()}</Text> {post.caption}
                     </Text>
                     <TouchableOpacity onPress={() => setShowComments(true)}>
                         <Text style={styles.comments}>
@@ -280,7 +283,6 @@ export default function PostCard({ post, onPostDeleted }: PostCardProps) {
     );
 }
 
-// Os styles permanecem os mesmos...
 const styles = StyleSheet.create({
     container: {
         marginBottom: 20,

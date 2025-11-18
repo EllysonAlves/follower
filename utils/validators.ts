@@ -46,7 +46,6 @@ export const validators = {
       return { isValid: false, message: 'Senha deve ter no máximo 50 caracteres' };
     }
 
-    // Verificar força da senha (opcional)
     const hasUpperCase = /[A-Z]/.test(password);
     const hasLowerCase = /[a-z]/.test(password);
     const hasNumbers = /\d/.test(password);
@@ -56,7 +55,7 @@ export const validators = {
 
     if (strength < 2) {
       return { 
-        isValid: true, // Ainda é válida, mas mostramos um aviso
+        isValid: true, 
         message: 'Senha fraca. Recomendamos usar letras maiúsculas, minúsculas, números e caracteres especiais'
       };
     }

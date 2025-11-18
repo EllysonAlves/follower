@@ -5,7 +5,7 @@ import { useRouter } from 'expo-router';
 import { toastService } from '../../services/toast';
 
 export default function Login() {
-  const [login, setLogin] = useState(''); // Pode ser email ou username
+  const [login, setLogin] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const { login: authLogin, user } = useAuth();
@@ -27,7 +27,6 @@ export default function Login() {
       console.log('✅ Login finalizado na tela');
       toastService.success('Login realizado com sucesso!', 'Bem-vindo');
       
-      // O redirecionamento deve acontecer automaticamente pelo AuthLayout
     } catch (error: any) {
       console.error('❌ Erro capturado na tela:', error);
       
@@ -35,10 +34,8 @@ export default function Login() {
       let errorTitle = 'Erro no Login';
       
       if (error.response) {
-        // Erro da API
         errorMessage = error.response.data?.messages.error || `Erro ${error.response.status}`;
-        
-        // Tratamento específico para erros comuns
+
         if (error.response.status === 401) {
           errorTitle = 'Credenciais inválidas';
           errorMessage = 'Email/senha incorretos. Verifique suas credenciais.';
@@ -52,12 +49,12 @@ export default function Login() {
         
         console.log('📊 Detalhes do erro:', error.response.data);
       } else if (error.request) {
-        // Erro de rede
+
         errorTitle = 'Problema de conexão';
         errorMessage = 'Verifique sua conexão com a internet e tente novamente.';
         console.log('🌐 Erro de rede:', error.request);
       } else {
-        // Outro erro
+ 
         errorMessage = error.messages.error || 'Erro desconhecido ao tentar fazer login';
       }
       
@@ -73,10 +70,9 @@ export default function Login() {
 
   return (
     <View style={styles.container}>
-      {/* Logo acima do título */}
       <View style={styles.logoContainer}>
         <Image 
-          source={require('../../assets/images/follower.png')} 
+          source={require('../../assets/images/mensi.png')} 
           style={styles.logo}
           resizeMode="contain"
         />
@@ -135,8 +131,8 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   logo: {
-    width: 300, // Ajuste conforme necessário
-    height: 300, // Ajuste conforme necessário
+    width: 300, 
+    height: 300, 
   },
   title: {
     fontSize: 32,

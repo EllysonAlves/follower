@@ -3,7 +3,7 @@ import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useColorScheme } from '../hooks/use-color-scheme';
 import { AuthProvider } from '../contexts/AuthContext';
-import { PostsProvider } from '../contexts/PostsContext'; // Importar o PostsProvider
+import { PostsProvider } from '../contexts/PostsContext'; 
 import Toast from 'react-native-toast-message';
 
 export const unstable_settings = {
@@ -27,6 +27,14 @@ export default function RootLayout() {
               name="followers" 
               options={{ 
                 title: 'Seguidores',
+                headerBackTitle: 'Voltar'
+              }} 
+            />
+
+            <Stack.Screen 
+              name="followings" 
+              options={{ 
+                title: 'Seguindo',
                 headerBackTitle: 'Voltar'
               }} 
             />

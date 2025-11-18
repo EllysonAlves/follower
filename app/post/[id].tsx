@@ -73,6 +73,7 @@ export default function PostDetail() {
 
 const styles = StyleSheet.create({
   container: {
+    paddingTop: 30,
     flex: 1,
     backgroundColor: 'white',
   },

@@ -18,7 +18,6 @@ export default function AuthLayout() {
     isLoading 
   });
 
-  // Se já estiver autenticado, redireciona para as tabs
   if (!isLoading && user) {
     console.log('➡️ Redirecionando para tabs...');
     return <Redirect href="/(tabs)" />;

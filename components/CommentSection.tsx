@@ -19,7 +19,7 @@ import { EVENTS, eventService } from '@/services/eventService';
 interface CommentSectionProps {
     postId: string;
     onClose?: () => void;
-    onCommentAdded?: () => void; // Callback opcional para atualização externa
+    onCommentAdded?: () => void; 
 }
 
 export default function CommentSection({ postId, onClose, onCommentAdded }: CommentSectionProps) {
@@ -32,7 +32,7 @@ export default function CommentSection({ postId, onClose, onCommentAdded }: Comm
     const [submitting, setSubmitting] = useState(false);
     const [likingCommentId, setLikingCommentId] = useState<string | null>(null);
     const { user } = useAuth();
-    const { updatePostComments } = usePosts(); // Usando o contexto de posts
+    const { updatePostComments } = usePosts(); 
 
     useEffect(() => {
         loadPostWithComments();
@@ -55,13 +55,13 @@ export default function CommentSection({ postId, onClose, onCommentAdded }: Comm
 
     const updateCommentCount = async () => {
         try {
-            // Buscar o post atualizado para pegar o contador correto
+        
             const updatedPost = await postService.getOne(postId);
 
-            // Atualizar no contexto global
+            
             updatePostComments(postId, updatedPost.comments_count || 0);
 
-            // Chamar callback externo se existir
+            
             if (onCommentAdded) {
                 onCommentAdded();
             }
@@ -120,7 +120,7 @@ export default function CommentSection({ postId, onClose, onCommentAdded }: Comm
             console.log('✅ Resposta enviada, recarregando comentários...');
             await loadPostWithComments();
 
-            // Delay antes de emitir eventos
+           
             setTimeout(() => {
                 console.log('🚀 Emitindo eventos de atualização...');
                 eventService.emit(EVENTS.COMMENT_ADDED, { postId });
@@ -149,7 +149,7 @@ export default function CommentSection({ postId, onClose, onCommentAdded }: Comm
 
             console.log(`❤️ Tentando ${currentIsLiked ? 'unlike' : 'like'} no comentário ${commentId}`);
 
-            // Atualização otimista IMEDIATA
+            
             setComments(prevComments =>
                 prevComments.map(comment =>
                     comment.id === commentId
@@ -162,7 +162,7 @@ export default function CommentSection({ postId, onClose, onCommentAdded }: Comm
                 )
             );
 
-            // Fazer a requisição para a API
+          
             if (currentIsLiked) {
                 await commentService.unlike(commentId);
                 console.log('✅ Unlike realizado com sucesso');
@@ -171,13 +171,13 @@ export default function CommentSection({ postId, onClose, onCommentAdded }: Comm
                 console.log('✅ Like realizado com sucesso');
             }
 
-            // Recarregar para sincronizar com a API
+           
             await loadPostWithComments();
 
         } catch (error: any) {
             console.error('❌ Erro ao curtir comentário:', error.response?.data || error.message);
 
-            // Reverter a atualização otimista em caso de erro
+          
             await loadPostWithComments();
 
             if (error.response?.status === 409) {
@@ -196,7 +196,7 @@ export default function CommentSection({ postId, onClose, onCommentAdded }: Comm
         setLikingCommentId(replyId);
 
         try {
-            // Encontrar o comentário e a reply
+            
             const comment = comments.find(c => c.id === commentId);
             const reply = comment?.replies?.find(r => r.id === replyId);
 
@@ -207,7 +207,7 @@ export default function CommentSection({ postId, onClose, onCommentAdded }: Comm
 
             console.log(`❤️ Tentando ${currentIsLiked ? 'unlike' : 'like'} na resposta ${replyId}`);
 
-            // Atualização otimista IMEDIATA
+           
             setComments(prevComments =>
                 prevComments.map(comment =>
                     comment.id === commentId
@@ -227,7 +227,7 @@ export default function CommentSection({ postId, onClose, onCommentAdded }: Comm
                 )
             );
 
-            // Fazer a requisição para a API (usando o mesmo serviço de comentários)
+            
             if (currentIsLiked) {
                 await commentService.unlike(replyId);
                 console.log('✅ Unlike na resposta realizado com sucesso');
@@ -236,13 +236,13 @@ export default function CommentSection({ postId, onClose, onCommentAdded }: Comm
                 console.log('✅ Like na resposta realizado com sucesso');
             }
 
-            // Recarregar para sincronizar com a API
+          
             await loadPostWithComments();
 
         } catch (error: any) {
             console.error('❌ Erro ao curtir resposta:', error.response?.data || error.message);
 
-            // Reverter a atualização otimista em caso de erro
+          
             await loadPostWithComments();
 
             if (error.response?.status === 409) {

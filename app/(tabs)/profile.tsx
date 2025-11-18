@@ -11,7 +11,7 @@ import {
   ActivityIndicator
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
+import { useRouter, Stack } from 'expo-router';
 import { useAuth } from '../../contexts/AuthContext';
 import { Post, User } from '../../types';
 import { postService, userService } from '../../services/api';
@@ -37,7 +37,6 @@ export default function Profile() {
       setLoading(true);
       setStatsLoading(true);
       
-      // Carregar posts, seguidores e seguindo em paralelo
       const [postsData, followersData, followingData] = await Promise.all([
         postService.getByUser(user!.id),
         userService.getFollowers(user!.id),
@@ -90,14 +89,21 @@ export default function Profile() {
   };
 
   const navigateToFollowers = () => {
-    router.push('/followers');
+    if (user) {
+      router.push({
+        pathname: '/followers',
+        params: { userId: user.id }
+      });
+    }
   };
 
   const navigateToFollowing = () => {
-    router.push({
-      pathname: '/followers',
-      params: { screen: 'following' }
-    });
+    if (user) {
+      router.push({
+        pathname: '/followings',
+        params: { userId: user.id }
+      });
+    }
   };
 
   const renderPostItem = ({ item }: { item: Post }) => (
@@ -126,158 +132,160 @@ export default function Profile() {
   }
 
   return (
-    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-      {/* Header do perfil */}
-      <View style={styles.profileHeader}>
-        <View style={styles.avatarContainer}>
-          {user.avatar ? (
-            <Image source={{ uri: user.avatar }} style={styles.avatar} />
-          ) : (
-            <View style={[styles.avatar, styles.avatarPlaceholder]}>
-              <Text style={styles.avatarText}>
-                {user.name?.charAt(0).toUpperCase()}
-              </Text>
+    <>
+      <Stack.Screen options={{ headerShown: false }} />
+      <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+        {/* Header do perfil */}
+        <View style={styles.profileHeader}>
+          <View style={styles.avatarContainer}>
+            {user.avatar ? (
+              <Image source={{ uri: user.avatar }} style={styles.avatar} />
+            ) : (
+              <View style={[styles.avatar, styles.avatarPlaceholder]}>
+                <Text style={styles.avatarText}>
+                  {user.name?.charAt(0).toUpperCase()}
+                </Text>
+              </View>
+            )}
+          </View>
+
+          <View style={styles.statsContainer}>
+            <View style={styles.stat}>
+              <Text style={styles.statNumber}>{userPosts.length}</Text>
+              <Text style={styles.statLabel}>Publicações</Text>
             </View>
+            
+            <TouchableOpacity 
+              style={styles.stat}
+              onPress={navigateToFollowers}
+              disabled={statsLoading}
+            >
+              {statsLoading ? (
+                <ActivityIndicator size="small" color="#007AFF" />
+              ) : (
+                <Text style={styles.statNumber}>{followers.length}</Text>
+              )}
+              <Text style={styles.statLabel}>Seguidores</Text>
+            </TouchableOpacity>
+            
+            <TouchableOpacity 
+              style={styles.stat}
+              onPress={navigateToFollowing}
+              disabled={statsLoading}
+            >
+              {statsLoading ? (
+                <ActivityIndicator size="small" color="#007AFF" />
+              ) : (
+                <Text style={styles.statNumber}>{following.length}</Text>
+              )}
+              <Text style={styles.statLabel}>Seguindo</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        {/* Informações do usuário */}
+        <View style={styles.userInfo}>
+          <Text style={styles.userName}>{user.name}</Text>
+          <Text style={styles.userUsername}>@{user.username}</Text>
+          {user.bio && (
+            <Text style={styles.userBio}>{user.bio}</Text>
           )}
         </View>
 
-        <View style={styles.statsContainer}>
-          <View style={styles.stat}>
-            <Text style={styles.statNumber}>{userPosts.length}</Text>
-            <Text style={styles.statLabel}>Publicações</Text>
-          </View>
-          
+        {/* Botões de ação */}
+        <View style={styles.actionButtons}>
           <TouchableOpacity 
-            style={styles.stat}
-            onPress={navigateToFollowers}
-            disabled={statsLoading}
+            style={styles.editButton}
+            onPress={navigateToEditProfile}
           >
-            {statsLoading ? (
-              <ActivityIndicator size="small" color="#007AFF" />
-            ) : (
-              <Text style={styles.statNumber}>{followers.length}</Text>
-            )}
-            <Text style={styles.statLabel}>Seguidores</Text>
+            <Text style={styles.editButtonText}>Editar Perfil</Text>
           </TouchableOpacity>
           
           <TouchableOpacity 
-            style={styles.stat}
-            onPress={navigateToFollowing}
-            disabled={statsLoading}
+            style={styles.logoutButton}
+            onPress={handleLogout}
           >
-            {statsLoading ? (
-              <ActivityIndicator size="small" color="#007AFF" />
-            ) : (
-              <Text style={styles.statNumber}>{following.length}</Text>
-            )}
-            <Text style={styles.statLabel}>Seguindo</Text>
+            <Ionicons name="log-out-outline" size={20} color="#666" />
           </TouchableOpacity>
         </View>
-      </View>
 
-      {/* Informações do usuário */}
-      <View style={styles.userInfo}>
-        <Text style={styles.userName}>{user.name}</Text>
-        <Text style={styles.userUsername}>@{user.username}</Text>
-        {user.bio && (
-          <Text style={styles.userBio}>{user.bio}</Text>
-        )}
-      </View>
-
-      {/* Botões de ação */}
-      <View style={styles.actionButtons}>
-        <TouchableOpacity 
-          style={styles.editButton}
-          onPress={navigateToEditProfile}
-        >
-          <Text style={styles.editButtonText}>Editar Perfil</Text>
-        </TouchableOpacity>
-        
-        <TouchableOpacity 
-          style={styles.logoutButton}
-          onPress={handleLogout}
-        >
-          <Ionicons name="log-out-outline" size={20} color="#666" />
-        </TouchableOpacity>
-      </View>
-
-      {/* Tabs */}
-      <View style={styles.tabsContainer}>
-        <TouchableOpacity 
-          style={[styles.tab, activeTab === 'posts' && styles.activeTab]}
-          onPress={() => setActiveTab('posts')}
-        >
-          <Ionicons 
-            name="grid" 
-            size={24} 
-            color={activeTab === 'posts' ? '#007AFF' : '#666'} 
-          />
-        </TouchableOpacity>
-        
-        <TouchableOpacity 
-          style={[styles.tab, activeTab === 'saved' && styles.activeTab]}
-          onPress={() => setActiveTab('saved')}
-        >
-          <Ionicons 
-            name="bookmark" 
-            size={24} 
-            color={activeTab === 'saved' ? '#007AFF' : '#666'} 
-          />
-        </TouchableOpacity>
-      </View>
-
-      {/* Conteúdo das tabs */}
-      {loading ? (
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#007AFF" />
-          <Text style={styles.loadingText}>Carregando posts...</Text>
-        </View>
-      ) : activeTab === 'posts' ? (
-        userPosts.length > 0 ? (
-          <View style={styles.postsGrid}>
-            <FlatList
-              data={userPosts}
-              keyExtractor={(item) => item.id}
-              renderItem={renderPostItem}
-              numColumns={3}
-              scrollEnabled={false}
-              contentContainerStyle={styles.gridContent}
+        {/* Tabs */}
+        <View style={styles.tabsContainer}>
+          <TouchableOpacity 
+            style={[styles.tab, activeTab === 'posts' && styles.activeTab]}
+            onPress={() => setActiveTab('posts')}
+          >
+            <Ionicons 
+              name="grid" 
+              size={24} 
+              color={activeTab === 'posts' ? '#007AFF' : '#666'} 
             />
+          </TouchableOpacity>
+          
+          <TouchableOpacity 
+            style={[styles.tab, activeTab === 'saved' && styles.activeTab]}
+            onPress={() => setActiveTab('saved')}
+          >
+            <Ionicons 
+              name="bookmark" 
+              size={24} 
+              color={activeTab === 'saved' ? '#007AFF' : '#666'} 
+            />
+          </TouchableOpacity>
+        </View>
+
+        {/* Conteúdo das tabs */}
+        {loading ? (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color="#007AFF" />
+            <Text style={styles.loadingText}>Carregando posts...</Text>
           </View>
+        ) : activeTab === 'posts' ? (
+          userPosts.length > 0 ? (
+            <View style={styles.postsGrid}>
+              <FlatList
+                data={userPosts}
+                keyExtractor={(item) => item.id}
+                renderItem={renderPostItem}
+                numColumns={3}
+                scrollEnabled={false}
+                contentContainerStyle={styles.gridContent}
+              />
+            </View>
+          ) : (
+            <View style={styles.emptyState}>
+              <Ionicons name="camera-outline" size={64} color="#ccc" />
+              <Text style={styles.emptyStateTitle}>Nenhuma publicação</Text>
+              <Text style={styles.emptyStateText}>
+                Compartilhe suas primeiras fotos e vídeos
+              </Text>
+              <TouchableOpacity 
+                style={styles.createPostButton}
+                onPress={() => router.push('/post/create')}
+              >
+                <Text style={styles.createPostButtonText}>Criar primeira publicação</Text>
+              </TouchableOpacity>
+            </View>
+          )
         ) : (
           <View style={styles.emptyState}>
-            <Ionicons name="camera-outline" size={64} color="#ccc" />
-            <Text style={styles.emptyStateTitle}>Nenhuma publicação</Text>
+            <Ionicons name="bookmark-outline" size={64} color="#ccc" />
+            <Text style={styles.emptyStateTitle}>Nenhum post salvo</Text>
             <Text style={styles.emptyStateText}>
-              Compartilhe suas primeiras fotos e vídeos
+              Posts que você salvar aparecerão aqui
             </Text>
-            <TouchableOpacity 
-              style={styles.createPostButton}
-              onPress={() => router.push('/post/create')}
-            >
-              <Text style={styles.createPostButtonText}>Criar primeira publicação</Text>
-            </TouchableOpacity>
           </View>
-        )
-      ) : (
-        <View style={styles.emptyState}>
-          <Ionicons name="bookmark-outline" size={64} color="#ccc" />
-          <Text style={styles.emptyStateTitle}>Nenhum post salvo</Text>
-          <Text style={styles.emptyStateText}>
-            Posts que você salvar aparecerão aqui
-          </Text>
-        </View>
-      )}
-    </ScrollView>
+        )}
+      </ScrollView>
+    </>
   );
 }
 
-// Os styles permanecem os mesmos do seu código anterior
 const styles = StyleSheet.create({
-  // ... mantenha todos os estilos que você já tem
   container: {
     flex: 1,
     backgroundColor: 'white',
+    paddingTop: 50, 
   },
   centerContainer: {
     flex: 1,
@@ -458,5 +466,4 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
   },
-  
 });

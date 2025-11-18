@@ -19,7 +19,7 @@ const api = axios.create({
     },
 });
 
-// Interceptor para adicionar token automaticamente
+
 api.interceptors.request.use(async (config) => {
     const token = await SecureStore.getItemAsync('token');
     if (token) {
@@ -70,7 +70,7 @@ export const userService = {
     },
 
     update: async (id: string, formData: FormData): Promise<any> => {
-        const response = await api.post(`/user/update/${id}`, formData, {
+        const response = await api.post(`/api/user/update/${id}`, formData, {
             headers: {
                 'Content-Type': 'multipart/form-data',
             },
@@ -110,11 +110,11 @@ export const userService = {
 
    getFollowStatus: async (userId: string): Promise<{ isFollowing: boolean }> => {
     try {
-      // Você pode precisar criar esta rota na API
+      
       const response = await api.get(`/api/user/follow-status/${userId}`);
       return response.data;
     } catch (error) {
-      // Fallback: buscar lista de following e verificar
+      
       const following = await userService.getFollowing(userId);
       const currentUser = await SecureStore.getItemAsync('user');
       const currentUserId = currentUser ? JSON.parse(currentUser).id : null;
@@ -136,10 +136,11 @@ export const postService = {
     },
 
     getAll: async (): Promise<Post[]> => {
-    const timestamp = new Date().getTime();
-    const response = await api.get(`/api/posts?t=${timestamp}`);
-    return response.data.data || response.data;
-  },
+        const timestamp = new Date().getTime();
+        const response = await api.get(`/api/posts?t=${timestamp}`);
+        console.log('📋 Estrutura completa dos posts da API:', JSON.stringify(response.data, null, 2));
+        return response.data.data || response.data;
+    },
 
     getOne: async (id: string): Promise<Post> => {
         const response = await api.get(`/api/posts/${id}`);
@@ -198,7 +199,7 @@ export const commentService = {
         }
     },
 
-    // Remover getByPost pois os comentários vêm com o post
+    
 };
 
 export const replyService = {

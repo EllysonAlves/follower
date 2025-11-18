@@ -30,8 +30,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
             if (storedToken) {
                 setToken(storedToken);
-                // Aqui você pode fazer uma requisição para pegar os dados do usuário
-                // Por enquanto, vamos apenas setar o token
+                
             }
         } catch (error) {
             console.error('❌ Error loading stored auth:', error);
@@ -49,12 +48,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             console.log('👤 User data:', response.user);
             console.log('🔑 Token:', response.token ? 'Recebido' : 'Não recebido');
 
-            // CORREÇÃO: Acessar response.user diretamente
+           
             if (response.user) {
                 setUser(response.user);
                 setToken(response.token);
 
-                // Verificar se o token foi salvo
+               
                 const savedToken = await SecureStore.getItemAsync('token');
                 console.log('💾 Token salvo no SecureStore:', savedToken ? 'Sim' : 'Não');
                 console.log('🔄 Estado atualizado - User:', response.user.name);

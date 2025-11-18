@@ -15,11 +15,11 @@ import { User } from '../types';
 import { userService } from '../services/api';
 import { toastService } from '../services/toast';
 
-export default function Followers() {
+export default function Following() {
   const { userId } = useLocalSearchParams();
-  const [followers, setFollowers] = useState<User[]>([]);
+  const [following, setFollowing] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
-  const [following, setFollowing] = useState<Set<string>>(new Set());
+  const [followingStatus, setFollowingStatus] = useState<Set<string>>(new Set());
   const [loadingFollow, setLoadingFollow] = useState<string | null>(null);
   const { user: currentUser } = useAuth();
   const router = useRouter();
@@ -27,21 +27,21 @@ export default function Followers() {
   const targetUserId = typeof userId === 'string' ? userId : Array.isArray(userId) ? userId[0] : '';
 
   useEffect(() => {
-    loadFollowers();
+    loadFollowing();
   }, [targetUserId]);
 
-  const loadFollowers = async () => {
+  const loadFollowing = async () => {
     try {
       if (targetUserId) {
-        const followersData = await userService.getFollowers(targetUserId);
-        setFollowers(followersData);
+        const followingData = await userService.getFollowing(targetUserId);
+        setFollowing(followingData);
         
-        // Carrega o status de follow do usuário logado
+        
         await loadFollowStatus();
       }
     } catch (error) {
-      console.error('Erro ao carregar seguidores:', error);
-      toastService.error('Não foi possível carregar os seguidores');
+      console.error('Erro ao carregar seguindo:', error);
+      toastService.error('Não foi possível carregar os usuários seguidos');
     } finally {
       setLoading(false);
     }
@@ -52,7 +52,7 @@ export default function Followers() {
       if (currentUser) {
         const followingList = await userService.getFollowing(currentUser.id);
         const followingSet = new Set(followingList.map(user => user.id));
-        setFollowing(followingSet);
+        setFollowingStatus(followingSet);
       }
     } catch (error) {
       console.error('Erro ao carregar status de follow:', error);
@@ -64,24 +64,24 @@ export default function Followers() {
     
     setLoadingFollow(userId);
     try {
-      if (following.has(userId)) {
-        // Unfollow
+      if (followingStatus.has(userId)) {
+       
         await userService.unfollow(userId);
-        setFollowing(prev => {
+        setFollowingStatus(prev => {
           const newSet = new Set(prev);
           newSet.delete(userId);
           return newSet;
         });
         toastService.success('Deixou de seguir');
       } else {
-        // Follow
+        
         await userService.follow(userId);
-        setFollowing(prev => new Set(prev).add(userId));
+        setFollowingStatus(prev => new Set(prev).add(userId));
         toastService.success('Seguindo');
       }
     } catch (error: any) {
       console.error('Erro ao seguir/desseguir:', error);
-      const message = following.has(userId) 
+      const message = followingStatus.has(userId) 
         ? 'Erro ao deixar de seguir' 
         : 'Erro ao seguir usuário';
       toastService.error(message);
@@ -98,7 +98,7 @@ export default function Followers() {
   };
 
   const renderUserItem = ({ item }: { item: User }) => {
-    const isFollowing = following.has(item.id);
+    const isFollowing = followingStatus.has(item.id);
     const isLoading = loadingFollow === item.id;
     const isOwnProfile = currentUser && item.id === currentUser.id;
 
@@ -152,26 +152,26 @@ export default function Followers() {
     return (
       <View style={styles.centerContainer}>
         <ActivityIndicator size="large" color="#007AFF" />
-        <Text style={styles.loadingText}>Carregando seguidores...</Text>
+        <Text style={styles.loadingText}>Carregando...</Text>
       </View>
     );
   }
 
   return (
     <View style={styles.container}>
-      <Stack.Screen options={{ title: 'Seguidores' }} />
+      <Stack.Screen options={{ title: 'Seguindo' }} />
       
       <FlatList
-        data={followers}
+        data={following}
         keyExtractor={(item) => item.id}
         renderItem={renderUserItem}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.listContent}
         ListEmptyComponent={
           <View style={styles.emptyState}>
-            <Text style={styles.emptyStateText}>Nenhum seguidor</Text>
+            <Text style={styles.emptyStateText}>Não está seguindo ninguém</Text>
             <Text style={styles.emptyStateSubtext}>
-              Quando alguém seguir este perfil, aparecerá aqui.
+              Quando este usuário seguir alguém, aparecerá aqui.
             </Text>
           </View>
         }

@@ -1,4 +1,3 @@
-// contexts/PostsContext.tsx
 import React, { createContext, useContext, useState, ReactNode, useCallback } from 'react';
 import { Post } from '../types';
 import { postService } from '../services/api';
@@ -50,7 +49,7 @@ export const PostsProvider: React.FC<{children: ReactNode}> = ({ children }) => 
     
     console.log('🎯 DADOS RECEBIDOS DA API - Posts:', postsData.length);
     
-    // NORMALIZAR OS DADOS - garantir que todos os campos existam
+    
     const normalizedPosts = postsData.map(post => ({
       ...post,
       comments_count: post.comments_count || 0,
